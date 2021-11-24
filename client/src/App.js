@@ -76,14 +76,15 @@ function App() {
   }
 
   async function sendMessages() {
-    let messageContent = {
-      room: room,
-      content: { author: userData.name, message: message },
-    };
-
-    await socket.emit("send_message", messageContent);
-    setAllMessages([...allMessages, messageContent.content]);
-    setMessage("");
+    if (message.length !== 0) {
+      let messageContent = {
+        room: room,
+        content: { author: userData.name, message: message },
+      };
+      await socket.emit("send_message", messageContent);
+      setAllMessages([...allMessages, messageContent.content]);
+      setMessage("");
+    }
   }
 
   return (
@@ -121,14 +122,21 @@ function App() {
                 <form onSubmit={(e) => loginChecker(e)}>
                   <div className={styles.leftData}>
                     <input
+                      className={styles.name}
                       name="name"
                       value={userData.name}
                       type="text"
                       placeholder="name..."
                       onChange={(e) => handleChange(e)}
                     />
-                    {errorHandler.name && (
-                      <h5 style={{ color: "red" }}>{errorHandler.name}</h5>
+                    {errorHandler.name ? (
+                      <h5 style={{ color: "rgb(117, 0, 0)" }}>
+                        {errorHandler.name}
+                      </h5>
+                    ) : (
+                      <h5 style={{ color: "rgb(117, 0, 0)" }}>
+                        {errorHandler.name}
+                      </h5>
                     )}
                     <div className={styles.password}>
                       <input
@@ -138,11 +146,7 @@ function App() {
                         placeholder="password..."
                         onChange={(e) => handleChange(e)}
                       />
-                      {errorHandler.password && (
-                        <h5 style={{ color: "red" }}>
-                          {errorHandler.password}
-                        </h5>
-                      )}
+
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
@@ -150,6 +154,15 @@ function App() {
                         {!showPassword ? <AiFillEye /> : <AiFillEyeInvisible />}
                       </button>
                     </div>
+                    {errorHandler.password ? (
+                      <h5 style={{ color: "rgb(117, 0, 0)", opacity: "1" }}>
+                        {errorHandler.password}
+                      </h5>
+                    ) : (
+                      <h5 style={{ color: "rgb(117, 0, 0)", opacity: "0" }}>
+                        {errorHandler.password}
+                      </h5>
+                    )}
                   </div>
                   <div className={styles.rightData}>
                     <button style={{ width: "60px" }} type="submit">
@@ -168,7 +181,7 @@ function App() {
                   Welcome {userData.name} ! Here you can write a room to chat
                   with your friends!{" "}
                 </header>
-                <div className={styles.login}>
+                <div className={styles.logged}>
                   <form>
                     <div className={styles.leftData}>
                       <input
@@ -176,40 +189,72 @@ function App() {
                         value={room}
                         onChange={(e) => setRoom(e.target.value)}
                       />
-                      {errorHandler.room && (
-                        <h5 style={{ color: "red" }}>{errorHandler.room}</h5>
-                      )}
                     </div>
-                    <div className={styles.rightData}>
+                    <div className={styles.passwordLogged}>
                       <button type="submit" onClick={(e) => startRoom(e)}>
                         Join Room!
                       </button>
                     </div>
                   </form>
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                    }}
+                  >
+                    {errorHandler.room && (
+                      <h5 style={{ color: "rgb(117, 0, 0)" }}>
+                        {errorHandler.room}
+                      </h5>
+                    )}
+                  </div>
                 </div>
               </>
             )}
           </div>
         ) : (
-          <div>
-            {allMessages !== undefined && allMessages.length !== 0
-              ? allMessages.map((e, i) => {
-                  return (
-                    <div>
-                      <h3>
-                        {e.author}: {e.message}{" "}
-                      </h3>
-                    </div>
-                  );
-                })
-              : null}
-            <input
-              value={message}
-              type="text"
-              placeholder="message..."
-              onChange={(e) => setMessage(e.target.value)}
-            />
-            <button onClick={sendMessages}>Send Message!</button>
+          <div className={styles.chatConteiner}>
+            <div className={styles.chatHeader}> Welcome to {room}'s room </div>
+            <div className={styles.chat}>
+              {allMessages !== undefined && allMessages.length !== 0
+                ? allMessages.map((e, i) => {
+                    console.log(e);
+                    return (
+                      <div className={styles.messageContainer} key={i}>
+                        <h3
+                          className={
+                            e.author === userData.name
+                              ? styles.you
+                              : styles.otherPerson
+                          }
+                        >
+                          <div
+                            style={{
+                              color: "white",
+                              display: "flex",
+                              justifyContent: "flex-start",
+                              fontWeight: "lighter",
+                            }}
+                          >
+                            {e.author}
+                          </div>{" "}
+                          <div style={{ color: "#2a3d50" }}>{e.message}</div>
+                        </h3>
+                      </div>
+                    );
+                  })
+                : null}
+            </div>
+            <div className={styles.chatData}>
+              <input
+                value={message}
+                type="text"
+                placeholder="message..."
+                onChange={(e) => setMessage(e.target.value)}
+              />
+              <button onClick={sendMessages}>Send</button>
+            </div>
           </div>
         )}
       </div>
